@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { User, Mail, FileText, Edit, Tag, Signal, Send, CheckCircle, XCircle, Loader } from 'lucide-react'
+import { User, Mail, FileText, Edit, Tag, Signal, Send, CheckCircle, XCircle, Loader, Eye, X, Sparkles } from 'lucide-react'
 import { sendEmail } from '../services/api'
+import { emailTemplates, getTemplatesByCategory } from '../utils/templates'
 import Toast from '../components/Toast'
 import './SendEmail.css'
 
@@ -18,6 +19,8 @@ const SendEmail = () => {
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
   const [errors, setErrors] = useState({})
+  const [showPreview, setShowPreview] = useState(false)
+  const [showTemplates, setShowTemplates] = useState(false)
 
   const categories = [
     { value: 'meeting', label: 'Meeting' },
@@ -117,6 +120,30 @@ const SendEmail = () => {
     }
   }
 
+  const handleTemplateSelect = (template) => {
+    setFormData(prev => ({
+      ...prev,
+      subject: template.subject,
+      description: template.description,
+      category: template.category,
+      priority: template.priority
+    }))
+    setShowTemplates(false)
+    setToast({ type: 'success', message: 'Template applied successfully!' })
+  }
+
+  const generatePreview = () => {
+    if (!formData.influencerName || !formData.description) {
+      return null
+    }
+
+    // Client-side preview generation (mimics what backend might generate)
+    const preview = `Hi ${formData.influencerName},\n\n${formData.description}\n\nBest regards`
+    return preview
+  }
+
+  const availableTemplates = getTemplatesByCategory(formData.category)
+
   return (
     <div className="send-email-page">
       <motion.div
@@ -139,6 +166,87 @@ const SendEmail = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
+        <div className="composer-header">
+          <h2>Compose Email</h2>
+          <div className="header-actions">
+            <button
+              type="button"
+              className="template-btn"
+              onClick={() => setShowTemplates(!showTemplates)}
+            >
+              <Sparkles size={18} />
+              <span>Templates</span>
+            </button>
+            <button
+              type="button"
+              className="preview-btn"
+              onClick={() => setShowPreview(!showPreview)}
+              disabled={!formData.influencerName || !formData.description}
+            >
+              <Eye size={18} />
+              <span>Preview</span>
+            </button>
+          </div>
+        </div>
+
+        {showTemplates && (
+          <motion.div
+            className="templates-panel"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <div className="templates-header">
+              <h3>Email Templates - {formData.category}</h3>
+              <button className="close-templates" onClick={() => setShowTemplates(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="templates-grid">
+              {availableTemplates.map(template => (
+                <motion.div
+                  key={template.id}
+                  className="template-card"
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => handleTemplateSelect(template)}
+                >
+                  <h4>{template.name}</h4>
+                  <p className="template-subject">{template.subject}</p>
+                  <p className="template-description">{template.description.substring(0, 80)}...</p>
+                  <span className="template-priority">{template.priority}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {showPreview && (
+          <motion.div
+            className="preview-panel"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <div className="preview-header">
+              <h3>Email Preview</h3>
+              <button className="close-preview" onClick={() => setShowPreview(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="preview-content">
+              <div className="preview-meta">
+                <div><strong>To:</strong> {formData.email || '[Email]'}</div>
+                <div><strong>Subject:</strong> {formData.subject || '[Subject]'}</div>
+                <div><strong>Category:</strong> {formData.category}</div>
+                <div><strong>Priority:</strong> {formData.priority}</div>
+              </div>
+              <div className="preview-body">
+                {generatePreview() || 'Fill in the form to see preview'}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <form onSubmit={handleSubmit} className="email-form">
           <div className="form-group">
             <label className="input-label">

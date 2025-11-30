@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Mail, Send } from 'lucide-react'
+import { Mail, Send, BarChart3, Calendar, Clock } from 'lucide-react'
 import './Navbar.css'
 
 const Navbar = () => {
@@ -39,7 +39,28 @@ const Navbar = () => {
             className={`nav-link ${location.pathname === '/sent-emails' ? 'active' : ''}`}
           >
             <Mail size={18} />
-            <span>View Sent</span>
+            <span>Sent Emails</span>
+          </Link>
+          <Link
+            to="/analytics"
+            className={`nav-link ${location.pathname === '/analytics' ? 'active' : ''}`}
+          >
+            <BarChart3 size={18} />
+            <span>Analytics</span>
+          </Link>
+          <Link
+            to="/timeline"
+            className={`nav-link ${location.pathname === '/timeline' ? 'active' : ''}`}
+          >
+            <Clock size={18} />
+            <span>Timeline</span>
+          </Link>
+          <Link
+            to="/calendar"
+            className={`nav-link ${location.pathname === '/calendar' ? 'active' : ''}`}
+          >
+            <Calendar size={18} />
+            <span>Calendar</span>
           </Link>
         </div>
       </div>
